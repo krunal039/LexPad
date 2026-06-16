@@ -14,57 +14,6 @@ public enum EndOfLine: String, Sendable, CaseIterable {
     }
 }
 
-public enum EditorLanguage: String, Sendable, CaseIterable {
-    case plain = "Plain Text"
-    case log = "Log"
-    case json = "JSON"
-    case xml = "XML"
-    case yaml = "YAML"
-    case python = "Python"
-    case swift = "Swift"
-    case javascript = "JavaScript"
-    case typescript = "TypeScript"
-    case shell = "Shell"
-    case markdown = "Markdown"
-    case cpp = "C++"
-    case c = "C"
-    case java = "Java"
-    case rust = "Rust"
-    case go = "Go"
-    case sql = "SQL"
-    case html = "HTML"
-    case css = "CSS"
-    case ini = "INI"
-    case toml = "TOML"
-
-    public static func detect(from url: URL) -> EditorLanguage {
-        let ext = url.pathExtension.lowercased()
-        switch ext {
-        case "log", "out": return .log
-        case "json": return .json
-        case "xml", "plist", "xhtml": return .xml
-        case "yaml", "yml": return .yaml
-        case "py", "pyw": return .python
-        case "swift": return .swift
-        case "js", "mjs", "cjs": return .javascript
-        case "ts", "tsx": return .typescript
-        case "sh", "bash", "zsh": return .shell
-        case "md", "markdown": return .markdown
-        case "cpp", "cc", "cxx", "hpp", "hxx": return .cpp
-        case "c", "h": return .c
-        case "java": return .java
-        case "rs": return .rust
-        case "go": return .go
-        case "sql": return .sql
-        case "html", "htm": return .html
-        case "css": return .css
-        case "ini", "cfg", "conf": return .ini
-        case "toml": return .toml
-        default: return .plain
-        }
-    }
-}
-
 public struct CaretPosition: Equatable, Sendable {
     public var line: Int
     public var column: Int
@@ -83,7 +32,17 @@ public struct TextDocument: Identifiable, Sendable {
     public var encoding: String.Encoding
     public var endOfLine: EndOfLine
     public var language: EditorLanguage
+    public var userLanguageID: String?
     public var caret: CaretPosition
+    public var bookmarks: [Bookmark]
+    public var isOverwriteMode: Bool
+    public var lineChangeHistory: [Int: LineChangeState]
+    public var isLargeFileMode: Bool
+    public var isReadOnly: Bool
+    public var isPinned: Bool
+    public var encodingLabel: String?
+    /// Custom label for untitled tabs (session restore + inline rename).
+    public var untitledName: String?
 
     public init(
         id: UUID = UUID(),
@@ -92,8 +51,17 @@ public struct TextDocument: Identifiable, Sendable {
         isDirty: Bool = false,
         encoding: String.Encoding = .utf8,
         endOfLine: EndOfLine = .lf,
-        language: EditorLanguage = .plain,
-        caret: CaretPosition = CaretPosition()
+        language: EditorLanguage = .normal_lang,
+        userLanguageID: String? = nil,
+        caret: CaretPosition = CaretPosition(),
+        bookmarks: [Bookmark] = [],
+        isOverwriteMode: Bool = false,
+        lineChangeHistory: [Int: LineChangeState] = [:],
+        isLargeFileMode: Bool = false,
+        isReadOnly: Bool = false,
+        isPinned: Bool = false,
+        encodingLabel: String? = nil,
+        untitledName: String? = nil
     ) {
         self.id = id
         self.url = url
@@ -102,14 +70,31 @@ public struct TextDocument: Identifiable, Sendable {
         self.encoding = encoding
         self.endOfLine = endOfLine
         self.language = language
+        self.userLanguageID = userLanguageID
         self.caret = caret
+        self.bookmarks = bookmarks
+        self.isOverwriteMode = isOverwriteMode
+        self.lineChangeHistory = lineChangeHistory
+        self.isLargeFileMode = isLargeFileMode
+        self.isReadOnly = isReadOnly
+        self.isPinned = isPinned
+        self.encodingLabel = encodingLabel
+        self.untitledName = untitledName
+    }
+
+    /// Tab title without dirty/pin/read-only adornments (used for inline rename).
+    public var tabTitle: String {
+        if let url {
+            return url.lastPathComponent
+        }
+        return untitledName ?? "Untitled"
     }
 
     public var displayName: String {
-        if let url {
-            return url.lastPathComponent + (isDirty ? " •" : "")
-        }
-        return "Untitled" + (isDirty ? " •" : "")
+        var name = tabTitle
+        if isReadOnly { name += " 🔒" }
+        if isPinned { name = "📌 " + name }
+        return name + (isDirty ? " •" : "")
     }
 
     public var lineCount: Int {
@@ -133,8 +118,22 @@ public enum DocumentLoadError: Error, LocalizedError {
     }
 }
 
+public enum DocumentRenameError: Error, LocalizedError {
+    case invalidName
+    case fileExists
+    case renameFailed(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidName: return "Invalid file name."
+        case .fileExists: return "A file with that name already exists."
+        case .renameFailed(let message): return message
+        }
+    }
+}
+
 public enum DocumentStore {
-    public static func load(from url: URL) throws -> TextDocument {
+    public static func load(from url: URL, largeFileThresholdBytes: Int? = nil) throws -> TextDocument {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw DocumentLoadError.fileNotFound
         }
@@ -143,13 +142,17 @@ public enum DocumentStore {
         let data = try Data(contentsOf: url, options: [.mappedIfSafe])
         let elapsed = CFAbsoluteTimeGetCurrent() - start
 
-        let encoding = detectEncoding(in: data) ?? .utf8
+        let detection = EncodingDetector.detect(in: data)
+        let encoding = detection.encoding
         guard let text = String(data: data, encoding: encoding) else {
             throw DocumentLoadError.readFailed("Could not decode file using \(encoding).")
         }
 
         let eol = detectEndOfLine(in: text)
+        let userLanguageID = UserLanguagePersistence.detect(from: url)
         let language = EditorLanguage.detect(from: url)
+        let threshold = largeFileThresholdBytes ?? LargeFilePolicy.defaultThresholdBytes
+        let largeFile = LargeFilePolicy.shouldUseLargeFileMode(byteCount: data.count, threshold: threshold)
 
         return TextDocument(
             url: url,
@@ -157,8 +160,12 @@ public enum DocumentStore {
             isDirty: false,
             encoding: encoding,
             endOfLine: eol,
-            language: language,
-            caret: CaretPosition()
+            language: largeFile ? LargeFilePolicy.languageForLargeFile(current: language) : language,
+            userLanguageID: userLanguageID,
+            caret: CaretPosition(),
+            isLargeFileMode: largeFile,
+            isReadOnly: !FileManager.default.isWritableFile(atPath: url.path),
+            encodingLabel: detection.label
         )
         .withLoadMetrics(bytes: data.count, seconds: elapsed)
     }
@@ -167,6 +174,9 @@ public enum DocumentStore {
         let target = url ?? document.url
         guard let target else {
             throw DocumentLoadError.readFailed("No save location specified.")
+        }
+        if document.isReadOnly {
+            throw DocumentLoadError.readFailed("Document is read-only.")
         }
 
         var output = document.text
@@ -189,23 +199,38 @@ public enum DocumentStore {
         saved.text = output
         saved.isDirty = false
         saved.language = EditorLanguage.detect(from: target)
+        saved.userLanguageID = UserLanguagePersistence.detect(from: target)
+        ChangeHistoryEngine.commitSave(in: &saved.lineChangeHistory)
         return saved
     }
 
+    /// Legacy helper — prefer `EncodingDetector`.
     private static func detectEncoding(in data: Data) -> String.Encoding? {
-        if data.starts(with: [0xEF, 0xBB, 0xBF]) { return .utf8 }
-        if data.starts(with: [0xFF, 0xFE]) { return .utf16LittleEndian }
-        if data.starts(with: [0xFE, 0xFF]) { return .utf16BigEndian }
-        if String(data: data, encoding: .utf8) != nil { return .utf8 }
-        return .isoLatin1
+        EncodingDetector.detect(in: data).encoding
     }
 
     private static func detectEndOfLine(in text: String) -> EndOfLine {
-        let crlf = text.components(separatedBy: "\r\n").count - 1
-        let lf = text.components(separatedBy: "\n").count - 1 - crlf
-        let cr = text.components(separatedBy: "\r").count - 1 - crlf
-        if crlf > lf && crlf > cr { return .crlf }
-        if cr > lf && cr > crlf { return .cr }
+        var crlf = 0, lf = 0, cr = 0
+        let bytes = Array(text.utf8)
+        var i = 0
+        while i < bytes.count {
+            if bytes[i] == 0x0D {
+                if i + 1 < bytes.count, bytes[i + 1] == 0x0A {
+                    crlf += 1
+                    i += 2
+                } else {
+                    cr += 1
+                    i += 1
+                }
+            } else if bytes[i] == 0x0A {
+                lf += 1
+                i += 1
+            } else {
+                i += 1
+            }
+        }
+        if crlf > 0, crlf >= lf, crlf >= cr { return .crlf }
+        if cr > lf, cr > crlf { return .cr }
         return .lf
     }
 }

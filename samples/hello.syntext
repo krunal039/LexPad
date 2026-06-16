@@ -1,0 +1,27 @@
+# Hello Syntext
+
+This paragraph has *italic* and **bold** text, plus a `code sample`.
+
+Visit [Syntext docs](http://www.dmulholl.com/docs/syntext/master/).
+
+:div .outer #main
+    :div .inner
+        Shorthand colon block with .class and #id.
+
+::: infobox .warning
+    Careful now!
+
+::: code python
+    def hello():
+        print('hello world')
+::: end
+
+::: table
+    Name | Role
+    ---- | ----
+    LexPad | Editor
+
+::: comment
+    This block is a Syntext comment — not rendered as visible HTML.
+
+::: hr :::

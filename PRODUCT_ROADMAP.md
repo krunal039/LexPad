@@ -380,26 +380,27 @@ notepad++ [file] [-lLang] [-nLine] [-cColumn]
 
 #### P1 Features
 
-- [ ] **Find in Files** (recursive, filters, results panel, encoding)
-- [ ] Replace in Files
-- [ ] **Compare files** (built-in diff view — no plugin needed)
-- [ ] Split view + clone document
-- [ ] Synchronized scrolling
-- [ ] Document Map (minimap)
-- [ ] Bookmarks + mark styles (5 colors)
-- [ ] **Macro record/playback/save**
-- [ ] **Session save/restore**
-- [ ] Folder as Workspace panel
-- [ ] Function List panel (regex symbol parser)
-- [ ] User Defined Languages (UDL) editor
-- [ ] Style configurator + 10 built-in themes
-- [ ] Auto-completion (word + function)
-- [ ] Comment/uncomment (language-aware)
-- [ ] Column Editor dialog (number insertion)
-- [ ] Multi-select next (match case/word)
-- [ ] Change history margin
-- [ ] Shortcut mapper (full remapping)
-- [ ] Command-line arguments
+- [x] **Find in Files** (recursive, filters, results panel, encoding)
+- [x] Replace in Files
+- [x] **Compare files** (built-in diff view — no plugin needed)
+- [x] Split view + clone document
+- [x] Synchronized scrolling
+- [x] Document Map (minimap)
+- [x] Bookmarks (gutter markers, bookmark-all from find)
+- [x] Bookmarks — mark styles (5 colors)
+- [x] **Macro record/playback/save**
+- [x] **Session save/restore**
+- [x] Folder as Workspace panel
+- [x] Function List panel (regex symbol parser)
+- [x] User Defined Languages (UDL) editor
+- [x] Style configurator + 10 built-in themes
+- [x] Auto-completion (word + function)
+- [x] Comment/uncomment (language-aware)
+- [x] Column Editor dialog (number insertion)
+- [x] Multi-select next (match case/word)
+- [x] Change history margin
+- [x] Shortcut mapper (full remapping)
+- [x] Command-line arguments
 - [ ] Print support
 - [ ] Character insert panel
 - [ ] External file change detection + reload prompt
@@ -604,9 +605,9 @@ Use this as a living checklist during development.
 ### Search
 - [ ] Find (normal, extended, regex)
 - [ ] Replace
-- [ ] Find in files
-- [ ] Replace in files
-- [ ] Mark all / bookmark all
+- [x] Find in files
+- [x] Replace in files
+- [x] Mark all / bookmark all
 - [ ] Incremental search
 - [ ] Find in project
 
@@ -622,29 +623,29 @@ Use this as a living checklist during development.
 - [ ] All line operations (see Section 2.3F)
 - [ ] All blank operations
 - [ ] All case conversions
-- [ ] Comment/uncomment
+- [x] Comment/uncomment
 - [ ] EOL conversion
 - [ ] Date/time insert
 
 ### Navigation
-- [ ] Bookmarks
+- [x] Bookmarks
 - [ ] Mark styles (5)
 - [ ] Change history
 - [ ] Document map
-- [ ] Function list
+- [x] Function list
 - [ ] Go to line
 - [ ] Character panel
 
 ### Views
-- [ ] Split horizontal/vertical
-- [ ] Clone document
-- [ ] Sync scroll
+- [x] Split horizontal/vertical
+- [x] Clone document
+- [x] Sync scroll
 - [ ] Multiple windows
 
 ### Files/Projects
-- [ ] Folder as workspace
+- [x] Folder as workspace
 - [ ] Project panels
-- [ ] Session management
+- [x] Session management
 - [ ] File monitoring
 - [ ] Encoding detection/conversion
 
