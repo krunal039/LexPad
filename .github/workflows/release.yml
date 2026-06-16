@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Accept Xcode license
+        run: sudo xcodebuild -license accept
+
+      - name: Bootstrap dependencies
+        run: ./scripts/bootstrap.sh
+
+      - name: Build app bundle
+        run: ./scripts/build-app-bundle.sh release
+
+      - name: Create release archive
+        run: |
+          cd dist
+          zip -r "../LexPad-${{ github.ref_name }}-macos.zip" LexPad.app
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: LexPad-${{ github.ref_name }}-macos.zip
+          generate_release_notes: true

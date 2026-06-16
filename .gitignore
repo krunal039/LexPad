@@ -5,9 +5,4 @@
 DerivedData/
 fixtures/
 *.log
-Vendor/scintilla/**/*.o
-Vendor/scintilla/**/*.a
-Vendor/scintilla/**/build/
-Vendor/lexilla/**/*.o
-Vendor/lexilla/**/Lex*.o
-!Vendor/lexilla/bin/
+Vendor/

@@ -1,24 +1,58 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+# Build, test, and package LexPad on every push to main and on pull requests.
+# Download the .app zip from the workflow run: Actions → latest run → Artifacts.
+# Official GitHub Releases (for end users) are still published by tagging v* (see release.yml).
 
-name: Swift
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-
-    runs-on: macos-latest
+  build-macos:
+    runs-on: macos-14
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: swift build -v
-      working-directory: LexPad
-    - name: Run tests
-      run: swift test -v
-      working-directory: LexPad
+      - uses: actions/checkout@v4
+
+      - name: Accept Xcode license
+        run: sudo xcodebuild -license accept
+
+      - name: Cache Scintilla and Lexilla
+        uses: actions/cache@v4
+        with:
+          path: Vendor
+          key: vendor-${{ runner.os }}-${{ hashFiles('scripts/bootstrap.sh') }}
+
+      - name: Bootstrap dependencies
+        run: ./scripts/bootstrap.sh
+
+      - name: Run tests
+        run: cd LexPad && swift test
+
+      - name: Build app bundle
+        run: ./scripts/build-app-bundle.sh release
+
+      - name: Create app archive
+        run: |
+          cd dist
+          zip -r "../LexPad-macos.zip" LexPad.app
+
+      - name: Upload macOS app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LexPad-macos-${{ github.sha }}
+          path: LexPad-macos.zip
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "### LexPad macOS build" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download **LexPad-macos-${{ github.sha }}** from this run's **Artifacts** tab." >> "$GITHUB_STEP_SUMMARY"
+          echo "Unzip and drag \`LexPad.app\` to Applications." >> "$GITHUB_STEP_SUMMARY"
