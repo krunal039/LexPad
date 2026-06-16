@@ -63,12 +63,15 @@ struct PreferencesView: View {
                     .tag(item)
             }
             .listStyle(.sidebar)
+            .lexPadThemedList()
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
         } detail: {
             detailContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .lexPadPanelBackground()
                 .navigationTitle(pane?.title ?? "Settings")
         }
+        .lexPadWindowBackground()
         .frame(minWidth: 780, minHeight: 540)
         .onDisappear {
             settings.persist()
@@ -169,6 +172,7 @@ struct PreferencesView: View {
             }
         }
         .formStyle(.grouped)
+        .lexPadThemedForm()
     }
 }
 

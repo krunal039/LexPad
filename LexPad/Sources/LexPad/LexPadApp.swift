@@ -212,7 +212,7 @@ struct LexPadApp: App {
                 userLanguageStore: userLanguageStore
             )
                 .frame(minWidth: 900, minHeight: 600)
-                .preferredColorScheme(colorScheme)
+                .lexPadTheme(settings: settings)
                 .onAppear {
                     AppController.shared.collection = collection
                     AppController.shared.settings = settings
@@ -507,18 +507,12 @@ struct LexPadApp: App {
                 userLanguageStore: userLanguageStore,
                 pluginRegistry: pluginRegistry
             )
+            .lexPadTheme(settings: settings)
         }
         .defaultSize(width: 780, height: 540)
         .windowResizability(.contentMinSize)
     }
 
-    private var colorScheme: ColorScheme? {
-        switch settings.theme {
-        case .system: return nil
-        case .light: return .light
-        case .dark: return .dark
-        }
-    }
 
     @ViewBuilder
     private func lineOpButton(_ title: String, _ name: Notification.Name, _ shortcut: String? = nil) -> some View {
@@ -614,7 +608,7 @@ struct MainEditorContainer: View {
             .modifier(phaseFeatureModifier)
             .modifier(TierFeatureNotificationsModifier(collection: collection, selectedRange: $selectedRange))
             .modifier(editorSheetsOverlay)
-            .helpNotifications()
+            .helpNotifications(settings: settings)
             .settingsNotifications()
             .onDrop(of: [.fileURL], isTargeted: nil) { providers in handleDrop(providers) }
             .onChange(of: collection.documents.count) { _ in fileMonitor.sync(documents: collection.documents) }
@@ -719,6 +713,7 @@ struct MainEditorContainer: View {
             showDiff: $showDiff,
             collection: collection,
             macroRecorder: macroRecorder,
+            settings: settings,
             findPattern: $findPattern,
             replacePattern: $rifReplacePattern,
             findRegex: $findRegex,

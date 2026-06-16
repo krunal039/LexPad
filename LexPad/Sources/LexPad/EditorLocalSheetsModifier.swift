@@ -45,21 +45,26 @@ struct EditorLocalSheetsModifier: ViewModifier {
                 ) { encoding in
                     try? collection.reloadActive(with: encoding)
                 }
+                .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showColumnEditor) {
                 ColumnEditorSheet(isPresented: $showColumnEditor) { start, step, pad in
                     collection.applyColumnNumbers(start: start, step: step, padWidth: pad, selectedRange: selectedRange)
                 }
+                .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showStyleConfigurator) {
                 StyleConfiguratorView(settings: settings, onClose: { showStyleConfigurator = false })
                     .frame(width: 420, height: 360)
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showPluginManager) {
                 PluginManagerPanel(manager: pluginRegistry, onClose: { showPluginManager = false })
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showUDLEditor) {
                 UDLEditorView(store: userLanguageStore, isPresented: $showUDLEditor)
+                    .lexPadTheme(settings: settings)
             }
     }
 }

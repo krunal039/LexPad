@@ -53,8 +53,10 @@ struct FindInFilesPanel: View {
                 }
                 .buttonStyle(.plain)
             }
+            .lexPadThemedList()
         }
         .padding(12)
+        .lexPadSheetContainer()
         .frame(minWidth: 640, minHeight: 360)
     }
 
@@ -123,6 +125,7 @@ struct ReplaceInFilesPanel: View {
             Spacer()
         }
         .padding(12)
+        .lexPadSheetContainer()
         .frame(minWidth: 640, minHeight: 280)
     }
 
@@ -183,7 +186,9 @@ struct DiffCompareView: View {
                     }
                 }
             }
+            .lexPadThemedList()
         }
+        .lexPadSheetContainer()
         .frame(minWidth: 800, minHeight: 500)
     }
 
@@ -242,7 +247,9 @@ struct CommandPaletteView: View {
                 }
                 .buttonStyle(.plain)
             }
+            .lexPadThemedList()
         }
+        .lexPadSheetContainer()
         .frame(width: 520, height: 360)
         .onAppear { focused = true }
     }
@@ -290,7 +297,9 @@ struct QuickOpenView: View {
                 }
                 .buttonStyle(.plain)
             }
+            .lexPadThemedList()
         }
+        .lexPadSheetContainer()
         .frame(width: 520, height: 360)
         .onAppear { focused = true }
     }
@@ -346,8 +355,10 @@ struct MacroPanelView: View {
                     Button("Delete") { recorder.delete(macro) }
                 }
             }
+            .lexPadThemedList()
             .padding(.horizontal, 4)
         }
+        .lexPadSheetContainer()
         .frame(width: 420, height: 280)
     }
 }

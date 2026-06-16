@@ -8,17 +8,18 @@ struct IncrementalSearchBar: View {
     let onNext: () -> Void
     let onPrevious: () -> Void
     let onClose: () -> Void
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         HStack(spacing: 8) {
-            Text("Incremental").font(.caption).foregroundStyle(.secondary)
+            Text("Incremental").font(.caption).foregroundStyle(theme.secondaryText)
             TextField("Search", text: $pattern)
                 .textFieldStyle(.roundedBorder)
                 .frame(minWidth: 180)
                 .onSubmit(onNext)
             Toggle("Case", isOn: $matchCase).toggleStyle(.checkbox)
             Text(matchCount == 0 ? "—" : "\(matchCount)")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.secondaryText)
                 .frame(width: 36, alignment: .leading)
             Button("◀", action: onPrevious)
             Button("▶", action: onNext)
@@ -26,7 +27,7 @@ struct IncrementalSearchBar: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(.bar)
+        .lexPadToolbarBackground()
     }
 }
 
@@ -57,6 +58,7 @@ struct ColumnEditorSheet: View {
             }
         }
         .padding(20)
+        .lexPadSheetContainer()
         .frame(width: 340)
     }
 }
@@ -140,6 +142,7 @@ struct GitPanel: View {
                             .font(.caption)
                     }
                 }
+                .lexPadThemedList()
                 if !diffText.isEmpty {
                     Text("Diff")
                         .font(.caption.weight(.semibold))
@@ -166,6 +169,7 @@ struct GitPanel: View {
                 }
             }
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 200)
     }
 }
@@ -213,7 +217,9 @@ struct SnippetsPanel: View {
                     }
                 }
             }
+            .lexPadThemedList()
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 180)
         .sheet(item: $editingSnippet) { snippet in
             SnippetEditorSheet(
@@ -266,6 +272,7 @@ struct SnippetEditorSheet: View {
             }
         }
         .padding(20)
+        .lexPadSheetContainer()
         .frame(width: 420, height: 340)
     }
 }
@@ -368,6 +375,7 @@ struct PluginManagerPanel: View {
                 .padding(embeddedInSettings ? 20 : 8)
             }
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 360, minHeight: embeddedInSettings ? 400 : 280)
     }
 }
@@ -397,6 +405,9 @@ struct StyleConfiguratorView: View {
                     }
                 }
                 .onChange(of: settings.theme) { _ in settings.persist() }
+                Text("System follows the color theme’s brightness. Light and Dark override chrome only; the editor keeps your selected theme.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Toggle("Change history margin", isOn: $settings.showChangeHistory)
                     .onChange(of: settings.showChangeHistory) { _ in settings.persist() }
             }
@@ -406,6 +417,8 @@ struct StyleConfiguratorView: View {
             }
             }
             .formStyle(.grouped)
+            .lexPadThemedForm()
         }
+        .lexPadSheetContainer()
     }
 }

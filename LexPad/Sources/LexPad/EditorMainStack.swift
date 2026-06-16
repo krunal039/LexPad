@@ -381,6 +381,7 @@ struct EditorMainStack: View {
                 }
             }
         }
+        .lexPadWindowBackground()
     }
 
     private func handleSelectionChange(documentID: UUID, pane: EditorPane, line: Int, column: Int) {

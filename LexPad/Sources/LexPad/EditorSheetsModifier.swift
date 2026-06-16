@@ -11,6 +11,7 @@ struct EditorSheetsModifier: ViewModifier {
     @Binding var showDiff: Bool
     @ObservedObject var collection: DocumentCollection
     @ObservedObject var macroRecorder: MacroRecorder
+    @ObservedObject var settings: EditorSettings
     @Binding var findPattern: String
     @Binding var replacePattern: String
     @Binding var findRegex: Bool
@@ -30,6 +31,7 @@ struct EditorSheetsModifier: ViewModifier {
         content
             .sheet(isPresented: $showGoToLine) {
                 GoToLineSheet(isPresented: $showGoToLine, maxLine: collection.activeDocument?.lineCount ?? 1, onGo: onGoToLine)
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showFindInFiles) {
                 FindInFilesPanel(
@@ -43,6 +45,7 @@ struct EditorSheetsModifier: ViewModifier {
                     isSearching: $fifSearching,
                     onOpenResult: onOpenFindResult
                 )
+                .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showReplaceInFiles) {
                 ReplaceInFilesPanel(
@@ -56,18 +59,23 @@ struct EditorSheetsModifier: ViewModifier {
                     status: $rifStatus,
                     isSearching: $fifSearching
                 )
+                .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showCommandPalette) {
                 CommandPaletteView(isPresented: $showCommandPalette)
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showQuickOpen) {
                 QuickOpenView(collection: collection, isPresented: $showQuickOpen)
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showMacros) {
                 MacroPanelView(isPresented: $showMacros, recorder: macroRecorder)
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showDiff) {
                 DiffCompareView(leftTitle: diffLeftTitle, rightTitle: diffRightTitle, diffLines: diffLines)
+                    .lexPadTheme(settings: settings)
             }
     }
 }

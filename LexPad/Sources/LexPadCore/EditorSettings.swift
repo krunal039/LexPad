@@ -130,10 +130,20 @@ public final class EditorSettings: ObservableObject {
     }
 
     public var prefersDarkMode: Bool? {
+        chromeIsDark
+    }
+
+    /// Whether sidebars, toolbars, and sheets use a dark palette.
+    public var chromeIsDark: Bool {
         switch theme {
         case .system: return builtInTheme.isDark
         case .light: return false
         case .dark: return true
         }
+    }
+
+    /// SwiftUI control appearance; kept in sync with chrome brightness.
+    public var resolvedColorScheme: ColorScheme? {
+        chromeIsDark ? .dark : .light
     }
 }

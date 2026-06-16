@@ -1,8 +1,10 @@
+import LexPadCore
 import SwiftUI
 
 struct HelpDocumentView: View {
     let topic: HelpTopic
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
 
     private var markdown: String { HelpSupport.loadMarkdown(for: topic) }
 
@@ -11,13 +13,18 @@ struct HelpDocumentView: View {
             HStack {
                 Text(topic.title)
                     .font(.headline)
+                    .foregroundStyle(theme.primaryText)
                 Spacer()
                 Button("Close") { dismiss() }
                     .keyboardShortcut(.cancelAction)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            Divider()
+            .background(theme.toolbarBackground)
+            .overlay(alignment: .bottom) {
+                theme.separator.frame(height: 1)
+            }
+
             ScrollView {
                 Group {
                     if let attributed = try? AttributedString(
@@ -37,6 +44,7 @@ struct HelpDocumentView: View {
                 .padding(16)
             }
         }
+        .lexPadSheetContainer()
         .frame(minWidth: 680, minHeight: 520)
     }
 }
@@ -115,11 +123,13 @@ struct AboutLexPadView: View {
             .padding(.vertical, 24)
             .frame(maxWidth: .infinity)
         }
+        .lexPadSheetContainer()
         .frame(width: 460, height: 520)
     }
 }
 
 struct HelpNotificationsModifier: ViewModifier {
+    @ObservedObject var settings: EditorSettings
     @State private var helpTopic: HelpTopic?
     @State private var showAbout = false
 
@@ -136,15 +146,17 @@ struct HelpNotificationsModifier: ViewModifier {
             }
             .sheet(item: $helpTopic) { topic in
                 HelpDocumentView(topic: topic)
+                    .lexPadTheme(settings: settings)
             }
             .sheet(isPresented: $showAbout) {
                 AboutLexPadView()
+                    .lexPadTheme(settings: settings)
             }
     }
 }
 
 extension View {
-    func helpNotifications() -> some View {
-        modifier(HelpNotificationsModifier())
+    func helpNotifications(settings: EditorSettings) -> some View {
+        modifier(HelpNotificationsModifier(settings: settings))
     }
 }

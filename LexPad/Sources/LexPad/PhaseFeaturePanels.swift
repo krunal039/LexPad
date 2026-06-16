@@ -55,8 +55,10 @@ struct RecentFilesPanel: View {
                         }
                     }
                 }
+                .lexPadThemedList()
             }
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 200)
         .accessibilityLabel("Recent files history")
     }
@@ -88,7 +90,9 @@ struct CharacterInsertPanel: View {
                     }
                 }
             }
+            .lexPadThemedList()
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 180)
         .accessibilityLabel("Character insert panel")
     }
@@ -141,6 +145,7 @@ struct HexViewPanel: View {
                 }
             }
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 280)
         .accessibilityLabel("Hex view panel")
     }
@@ -182,7 +187,9 @@ struct ProjectPanel: View {
                 }
                 .buttonStyle(.plain)
             }
+            .lexPadThemedList()
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 200)
         .accessibilityLabel("Project panel")
     }
@@ -211,12 +218,14 @@ struct EncodingPickerSheet: View {
                 }
                 .buttonStyle(.plain)
             }
+            .lexPadThemedList()
             HStack {
                 Spacer()
                 Button("Cancel") { isPresented = false }
             }
         }
         .padding(16)
+        .lexPadSheetContainer()
         .frame(width: 360, height: 320)
     }
 }

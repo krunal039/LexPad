@@ -71,11 +71,7 @@ public enum BuiltInEditorTheme: String, CaseIterable, Identifiable, Sendable {
     }
 
     public var isDark: Bool {
-        switch self {
-        case .solarizedLight, .githubLight, .ayuLight, .materialLight, .tomorrow, .atomOneLight:
-            return false
-        default: return true
-        }
+        AppChromeColors.isDarkBackground(EditorThemePalette.colors(for: self).background)
     }
 }
 

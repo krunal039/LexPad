@@ -15,6 +15,7 @@ struct FindReplaceBarView: View {
     let onReplaceAll: () -> Void
     let onBookmarkAll: () -> Void
     let onClose: () -> Void
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         VStack(spacing: 6) {
@@ -30,7 +31,7 @@ struct FindReplaceBarView: View {
                 Toggle("Whole word", isOn: $wholeWord).toggleStyle(.checkbox)
 
                 Text(matchCount == 0 ? "No matches" : "\(matchCount) matches")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.secondaryText)
                     .frame(minWidth: 90, alignment: .leading)
 
                 Button("Previous", action: onFindPrevious)
@@ -51,7 +52,7 @@ struct FindReplaceBarView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(.bar)
+        .lexPadToolbarBackground()
     }
 }
 
@@ -61,16 +62,18 @@ struct SplitPaneHeaderView: View {
     let isClone: Bool
     @Binding var syncScroll: Bool
     let onClosePane: () -> Void
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         HStack(spacing: 8) {
             Text(pane == .primary ? "Pane 1" : "Pane 2")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.secondaryText)
                 .frame(width: 44, alignment: .leading)
 
             Text(documentName)
                 .font(.caption)
+                .foregroundStyle(theme.primaryText)
                 .lineLimit(1)
 
             if isClone {
@@ -78,7 +81,7 @@ struct SplitPaneHeaderView: View {
                     .font(.caption2)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color.accentColor.opacity(0.15))
+                    .background(theme.activeTabBackground(opacity: 0.18))
                     .clipShape(Capsule())
             }
 
@@ -95,12 +98,12 @@ struct SplitPaneHeaderView: View {
                     .font(.system(size: 13))
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(theme.secondaryText)
             .help(isClone ? "Close clone view" : "Close split pane")
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        .lexPadToolbarBackground()
     }
 }
 
@@ -110,6 +113,7 @@ struct TabStripView: View {
     @ObservedObject var settings: EditorSettings
     @ObservedObject var splitState: SplitViewState
     let onClose: (UUID) -> Void
+    @Environment(\.appTheme) private var theme
 
     @State private var renamingDocumentID: UUID?
     @State private var renameText = ""
@@ -142,7 +146,10 @@ struct TabStripView: View {
         }
         .frame(height: 30)
         .frame(maxWidth: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(theme.toolbarBackground)
+        .overlay(alignment: .bottom) {
+            theme.separator.frame(height: 1)
+        }
         .onDrop(of: [.text], delegate: TabSplitDropDelegate(
             collection: collection,
             splitState: splitState
@@ -156,7 +163,7 @@ struct TabStripView: View {
                 .padding(.horizontal, 4)
             openTabsMenu
         }
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(theme.toolbarBackground)
     }
 
     private var openTabsMenu: some View {
@@ -230,7 +237,7 @@ struct TabStripView: View {
                 .frame(height: 28)
                 .frame(maxWidth: .infinity)
         }
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(theme.toolbarBackground)
     }
 
     private var multiLineStrip: some View {
@@ -253,7 +260,10 @@ struct TabStripView: View {
                 .frame(maxWidth: .infinity)
         }
         .frame(maxHeight: 96)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(theme.toolbarBackground)
+        .overlay(alignment: .bottom) {
+            theme.separator.frame(height: 1)
+        }
     }
 
     @ViewBuilder
@@ -296,7 +306,7 @@ struct TabStripView: View {
         }
         .overlay(alignment: .bottom) {
             if isActive {
-                Rectangle().fill(Color.accentColor).frame(height: 2)
+                Rectangle().fill(theme.accent).frame(height: 2)
             }
         }
         .contentShape(Rectangle())
@@ -347,7 +357,7 @@ struct TabStripView: View {
     }
 
     private func tabBackground(isActive: Bool, group: TabGroup?) -> Color {
-        if isActive { return Color.accentColor.opacity(0.15) }
+        if isActive { return theme.activeTabBackground() }
         if let group { return TabGroupColor.color(at: group.colorIndex).opacity(0.1) }
         return Color.clear
     }
@@ -368,6 +378,7 @@ struct TabStripView: View {
             Text(document.displayName)
                 .lineLimit(1)
                 .truncationMode(.tail)
+                .foregroundStyle(theme.primaryText)
                 .frame(maxWidth: 200, alignment: .leading)
                 .onTapGesture(count: 2) {
                     beginRename(document)
@@ -449,6 +460,7 @@ struct PaneTabStrip: View {
     let onClose: (UUID) -> Void
     let onMoveToOtherView: () -> Void
     let onCloseSplit: () -> Void
+    @Environment(\.appTheme) private var theme
 
     @State private var renamingDocumentID: UUID?
     @State private var renameText = ""
@@ -458,7 +470,7 @@ struct PaneTabStrip: View {
         HStack(spacing: 6) {
             Text(pane == .primary ? "Pane 1" : "Pane 2")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.secondaryText)
                 .frame(width: 44, alignment: .leading)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -504,7 +516,7 @@ struct PaneTabStrip: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        .lexPadToolbarBackground()
         .onDrop(of: [.text], delegate: PaneTabDropDelegate(
             pane: pane,
             splitState: splitState,
@@ -555,9 +567,9 @@ struct PaneTabStrip: View {
     }
 
     private func paneTabBackground(isActive: Bool, group: TabGroup?) -> Color {
-        if isActive { return Color.accentColor.opacity(0.2) }
+        if isActive { return theme.activeTabBackground(opacity: 0.24) }
         if let group { return TabGroupColor.color(at: group.colorIndex).opacity(0.1) }
-        return Color(nsColor: .windowBackgroundColor).opacity(0.5)
+        return theme.toolbarBackground.opacity(0.65)
     }
 
     @ViewBuilder
@@ -632,13 +644,15 @@ struct StatusBarView: View {
     let insertMode: Bool
     var gitBranch: String? = nil
     var largeFileMode: Bool = false
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         HStack(spacing: 16) {
             Text("Ln \(document?.caret.line ?? 1), Col \(document?.caret.column ?? 1)")
+                .foregroundStyle(theme.primaryText)
             if let gitBranch {
                 Text("⎇ \(gitBranch)")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.secondaryText)
             }
             if largeFileMode {
                 Text("LARGE")
@@ -646,32 +660,40 @@ struct StatusBarView: View {
             }
             if document?.isReadOnly == true {
                 Text("READ-ONLY")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.secondaryText)
             }
             if let label = document?.encodingLabel {
                 Text(label)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.secondaryText)
             }
             Text(languageLabel ?? document?.language.rawValue ?? "Plain Text")
+                .foregroundStyle(theme.primaryText)
             Text(document?.endOfLine.displayName ?? "Unix (LF)")
+                .foregroundStyle(theme.primaryText)
             Text(document?.encoding.displayName ?? "UTF-8")
+                .foregroundStyle(theme.primaryText)
             Text(insertMode ? "INS" : "OVR")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.secondaryText)
             if wordWrap {
-                Text("Wrap").foregroundStyle(.secondary)
+                Text("Wrap").foregroundStyle(theme.secondaryText)
             }
             Spacer()
             if matchCount > 0 {
                 Text("\(matchCount) matches")
+                    .foregroundStyle(theme.primaryText)
             }
             Text("\(document?.lineCount ?? 1) lines")
+                .foregroundStyle(theme.primaryText)
             Text("\(document?.characterCount ?? 0) chars")
+                .foregroundStyle(theme.primaryText)
         }
         .font(.caption)
         .padding(.horizontal, 12)
         .padding(.vertical, 4)
-        .background(Color(nsColor: .windowBackgroundColor))
-        .overlay(alignment: .top) { Divider() }
+        .lexPadWindowBackground()
+        .overlay(alignment: .top) {
+            theme.separator.frame(height: 1)
+        }
     }
 }
 
@@ -695,6 +717,7 @@ struct GoToLineSheet: View {
         }
         .padding(20)
         .frame(width: 320)
+        .lexPadSheetContainer()
     }
 
     private func submit() {

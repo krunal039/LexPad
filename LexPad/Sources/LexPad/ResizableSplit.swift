@@ -8,12 +8,13 @@ struct SplitResizeHandle: View {
 
     let axis: Axis
     let onDrag: (CGFloat) -> Void
+    @Environment(\.appTheme) private var theme
 
     @State private var lastTranslation: CGFloat = 0
 
     var body: some View {
         Rectangle()
-            .fill(Color(nsColor: .separatorColor))
+            .fill(theme.separator)
             .frame(
                 width: axis == .vertical ? 5 : nil,
                 height: axis == .horizontal ? 5 : nil
@@ -22,11 +23,11 @@ struct SplitResizeHandle: View {
             .overlay {
                 if axis == .horizontal {
                     Capsule()
-                        .fill(Color.secondary.opacity(0.5))
+                        .fill(theme.secondaryText.opacity(0.55))
                         .frame(width: 36, height: 3)
                 } else {
                     Capsule()
-                        .fill(Color.secondary.opacity(0.5))
+                        .fill(theme.secondaryText.opacity(0.55))
                         .frame(width: 3, height: 36)
                 }
             }

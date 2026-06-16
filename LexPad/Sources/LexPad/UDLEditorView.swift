@@ -19,6 +19,7 @@ struct UDLEditorView: View {
                         Text(language.name).tag(Optional(language))
                     }
                 }
+                .lexPadThemedList()
             } detail: {
                 if let editing {
                     UDLFormView(
@@ -33,6 +34,7 @@ struct UDLEditorView: View {
                 }
             }
         }
+        .lexPadSheetContainer()
         .frame(width: 720, height: 480)
         .alert("UDL Error", isPresented: Binding(
             get: { errorMessage != nil },
@@ -127,6 +129,7 @@ private struct UDLFormView: View {
             }
         }
         .formStyle(.grouped)
+        .lexPadThemedForm()
         .padding()
     }
 
@@ -154,6 +157,7 @@ struct UserLanguagesPreferencesView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .lexPadThemedList()
             Button("Open UDL Editor…") { showEditor = true }
         }
         .sheet(isPresented: $showEditor) {

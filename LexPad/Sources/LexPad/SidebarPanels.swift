@@ -5,6 +5,7 @@ struct PanelHeaderView<Trailing: View>: View {
     let title: String
     var onClose: (() -> Void)?
     @ViewBuilder var trailing: () -> Trailing
+    @Environment(\.appTheme) private var theme
 
     init(title: String, onClose: (() -> Void)? = nil, @ViewBuilder trailing: @escaping () -> Trailing = { EmptyView() }) {
         self.title = title
@@ -14,7 +15,9 @@ struct PanelHeaderView<Trailing: View>: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(title).font(.headline)
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(theme.primaryText)
             Spacer()
             trailing()
             if let onClose {
@@ -23,12 +26,16 @@ struct PanelHeaderView<Trailing: View>: View {
                         .font(.system(size: 14))
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.secondaryText)
                 .help("Close panel")
             }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
+        .background(theme.toolbarBackground)
+        .overlay(alignment: .bottom) {
+            theme.separator.frame(height: 1)
+        }
     }
 }
 
@@ -61,7 +68,9 @@ struct WorkspacePanel: View {
                     WorkspaceNodeView(node: node, onOpenFile: onOpenFile)
                 }
             }
+            .lexPadThemedList()
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 180)
     }
 
@@ -146,8 +155,10 @@ struct FunctionListPanel: View {
                     }
                     .buttonStyle(.plain)
                 }
+                .lexPadThemedList()
             }
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 180)
     }
 
@@ -207,6 +218,7 @@ struct ShortcutMapperView: View {
                 }
             }
         }
+        .lexPadThemedForm()
         .onDisappear { stopRecording() }
     }
 
@@ -309,7 +321,9 @@ struct DocumentListPanel: View {
                     }
                 }
             }
+            .lexPadThemedList()
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 180)
         .sheet(item: $editingGroup) { group in
             TabGroupEditorSheet(group: group, tabGroups: tabGroups)
@@ -367,6 +381,7 @@ struct TabGroupEditorSheet: View {
             }
         }
         .padding(20)
+        .lexPadSheetContainer()
         .frame(width: 360)
     }
 }
@@ -440,6 +455,7 @@ struct DocumentMapPanel: View {
     let visibleLine: Int
     let onGoToLine: (Int) -> Void
     var onClose: (() -> Void)?
+    @Environment(\.appTheme) private var theme
 
     private var lines: [String] {
         guard let document else { return [] }
@@ -464,7 +480,7 @@ struct DocumentMapPanel: View {
                     let viewRect = CGRect(x: 0, y: top, width: size.width, height: size.height * viewportLines / CGFloat(count))
                     context.stroke(Path(viewRect), with: .color(.accentColor), lineWidth: 1)
                 }
-                .background(Color(nsColor: .textBackgroundColor).opacity(0.4))
+                .background(theme.editorBackground.opacity(0.4))
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 0)
@@ -476,6 +492,7 @@ struct DocumentMapPanel: View {
                 )
             }
         }
+        .lexPadPanelBackground()
         .frame(minWidth: 60)
     }
 }
