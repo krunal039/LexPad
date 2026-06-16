@@ -160,8 +160,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         guard !paths.isEmpty else { return }
         let urls = paths.map { URL(fileURLWithPath: ($0 as NSString).expandingTildeInPath) }
+        let capturedLine = line
+        let capturedLanguage = language
         Task { @MainActor in
-            AppController.shared.openURLs(urls, line: line, language: language)
+            AppController.shared.openURLs(urls, line: capturedLine, language: capturedLanguage)
         }
     }
 
